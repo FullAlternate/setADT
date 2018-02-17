@@ -36,56 +36,26 @@ set_t *set_union(set_t *a, set_t *b){
     list_sort(a->list);
     list_sort(b->list);
 
-    set_t *c = set_create(cmpfunc);
-    c->list->head = merge(a->list->head, b->list->head, cmpfunc);
+    set_t *c = set_create(compare_strings);
 
-    listnode_t *tmp1 = c->list->head;
-    listnode_t *tmp2 = c->list->head->next;
+    list_iter_t *iterA = list_createiter(a->list);
+    list_iter_t *iterB = list_createiter(b->list);
+    list_iter_t *iterC = list_createiter(c->list);
 
-    tmp1->prev = NULL;
 
-    while(tmp2->next != NULL){
-        while(tmp1->elem == tmp2->elem){
-            tmp2-> = tmp2->next
-        }
 
-        tmp1->next->item = tmp2->item;
-        tmp1->next->prev = tmp1;
-        tmp1 = tmp1->next;
-    }
+    while(list_hasnext(iterA) == 1){
+
     
-
-    while(tmp1->next != NULL){
-        list_poplast(c->list);
+    if(list_next(iterA) <= list_next(iterB)){
+        set_add(c, a->list->head->elem);
+        
     }
-    
-    return c;
-}
 
-/*set_t *set_intersection(set_t *a, set_t *b){
-    list_sort(a->list);
-    list_sort(b->list);
-
-    listnode_t *tmp1 = a->list->head;
-    listnode_t *tmp2 = b->list->head;
-
-    set_t *c = set_create(cmpfunc);
-
-    while(tmp1 != NULL || tmp2 != NULL){
-        if(tmp1->item == tmp2->item && tmp1->item != c->list->tail->prev){
-            list_addlast(c->list);
-            tmp1 = tmp1->next;
-            tmp2 = tmp2->next;
-        }
-
-        else if(tmp1->item > tmp2->item){
-            tmp2 = tmp2->next;
-        }
-
-        else{
-            tmp1 = tmp1->next;
-        }
+    else {
+        set_add(c, b->list->head->elem);
+        list_next(iterB);
     }
-    
-    return c;
-}*/
+
+    list_next(iterC);
+}    
