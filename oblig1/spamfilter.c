@@ -3,6 +3,29 @@
 #include "set.h"
 #include "common.h"
 
+void printset(char *name, set_t *a)
+{
+	printf("check");
+	set_iter_t *iter;
+	char *elem;
+	
+	printf("%s:   [", name);
+	
+	/* Validate the result sets */
+	iter = set_createiter(a);
+	while(set_hasnext(iter))
+	{
+		elem = (char *)set_next(iter);
+		printf("%s", elem);
+		if(set_hasnext(iter))
+			printf(", ");
+	}
+	
+	set_destroyiter(iter);
+
+	printf("]\n");
+}
+
 /*
  * Case-insensitive comparison function for strings.
  */
@@ -81,57 +104,44 @@ int main(int argc, char **argv)
 	nonspamdir = argv[2];
 	maildir = argv[3];
 
-	set_t *s1 = tokenize("spam/spam1.txt");
-	set_t *s2 = tokenize("spam/spam2.txt");
-	set_t *s3 = tokenize("spam/spam3.txt");
-	set_t *s4 = tokenize("spam/spam4.txt");
+	list_t *spamlist = find_files(spamdir);
+	list_t *nonspamlist = find_files(nonspamdir);
+	list_t *maillist = find_files(maildir);
+	
+	list_iter_t *spamIter = list_createiter(spamlist);
+	list_iter_t *nonspamIter = list_createiter(nonspamlist);
+	list_iter_t *mailIter = list_createiter(maillist);
 
-	s1 = set_intersection(s1, s2);
-	s3 = set_intersection(s3, s4);
-	s1 = set_intersection(s1, s3);
+	set_t *s1 = tokenize(list_next(spamIter));
 
-	set_t *n1 = tokenize("nonspam/nonspam1.txt");
-	set_t *n2 = tokenize("nonspam/nonspam2.txt");
-	set_t *n3 = tokenize("nonspam/nonspam3.txt");
-	set_t *n4 = tokenize("nonspam/nonspam4.txt");
+	while(list_hasnext(spamIter) == 1){
+		set_t *s2 = tokenize(list_next(spamIter));
 
-	n1 = set_union(n1, n2);
-	n3 = set_union(n3, n4);
-	n1 = set_union(n1, n3);
+		s1 = set_intersection(s1, s2);
+	}
+
+
+	set_t *n1 = tokenize(list_next(nonspamIter));
+
+	while(list_hasnext(nonspamIter) == 1){
+		set_t *n2 = tokenize(list_next(nonspamIter));
+
+		n1 = set_union(n1, n2);
+
+	}
+
+
 	set_t *combinedSet = set_difference(s1, n1);
 
-	char *mc1 = "mail/mail1.txt";
-	char *mc2 = "mail/mail2.txt";
-	char *mc3 = "mail/mail3.txt";
-	char *mc4 = "mail/mail4.txt";
-	char *mc5 = "mail/mail5.txt";
+	while(list_hasnext(mailIter) == 1){
+		void *name = list_next(mailIter);
+		
+		set_t *m = tokenize(name);
+		m = set_intersection(m, combinedSet);		
+		int size = set_size(m);
 
-	set_t *m1 = tokenize(mc1);
-	m1 = set_intersection(m1, combinedSet);
-
-	set_t *m2 = tokenize(mc2);
-	m2 = set_intersection(m2, combinedSet);
-
-	set_t *m3 = tokenize(mc3);
-	m3 = set_intersection(m3, combinedSet);
-
-	set_t *m4 = tokenize(mc4);
-	m4 = set_intersection(m4, combinedSet);
-	
-	set_t *m5 = tokenize(mc5);
-	m5 = set_intersection(m5, combinedSet);
-	
-	int sizem1 = set_size(m1);
-	int sizem2 = set_size(m2);
-	int sizem3 = set_size(m3);
-	int sizem4 = set_size(m4);
-	int sizem5 = set_size(m5);
-
-	printf("%s: %d spam word(s) -> %s\n", mc1, sizem1, spamcheck(sizem1));
-	printf("%s: %d spam word(s) -> %s\n", mc2, sizem2, spamcheck(sizem2));
-	printf("%s: %d spam word(s) -> %s\n", mc3, sizem3, spamcheck(sizem3));
-	printf("%s: %d spam word(s) -> %s\n", mc4, sizem4, spamcheck(sizem4));
-	printf("%s: %d spam word(s) -> %s\n", mc5, sizem5, spamcheck(sizem5));
+		printf("%s: %d spam word(s) -> %s\n", name, size, spamcheck(size));
+	}
 
     return 0;
 }

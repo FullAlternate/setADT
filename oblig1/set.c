@@ -5,6 +5,7 @@
 
 struct set {
     list_t *list;
+    cmpfunc_t cmpfunc;
 };
 
 struct set_iter{
@@ -20,6 +21,7 @@ set_t *set_create(cmpfunc_t cmpfunc) {
     }
 
     s->list = list_create(cmpfunc);
+    s->cmpfunc = cmpfunc;
 
     return s;
 }
@@ -47,7 +49,7 @@ int set_contains(set_t *set, void *elem){
 
 set_t *set_union(set_t *a, set_t *b){
 
-    set_t *c = set_create(compare_strings);
+    set_t *c = set_create(a->cmpfunc);
     list_iter_t *iterA = list_createiter(a->list);
     list_iter_t *iterB = list_createiter(b->list);
     void *elemA;
@@ -81,7 +83,7 @@ set_t *set_union(set_t *a, set_t *b){
  */
 set_t *set_intersection(set_t *a, set_t *b){
 
-    set_t *c = set_create(compare_strings);
+    set_t *c = set_create(a->cmpfunc);
     list_iter_t *iterA = list_createiter(a->list);
     list_iter_t *iterB = list_createiter(b->list);
     void *elemA;
@@ -107,7 +109,7 @@ set_t *set_intersection(set_t *a, set_t *b){
  */
 set_t *set_difference(set_t *a, set_t *b){
 
-    set_t *c = set_create(compare_strings);
+    set_t *c = set_create(a->cmpfunc);
     list_iter_t *iterA = list_createiter(a->list);
     void *elemA;
     
@@ -128,7 +130,7 @@ set_t *set_difference(set_t *a, set_t *b){
  * Returns a copy of the given set.
  */
 set_t *set_copy(set_t *set){
-    set_t *c = set_create(compare_strings);
+    set_t *c = set_create(set->cmpfunc);
     list_iter_t *iter = list_createiter(set->list);
     void *elem;
     
